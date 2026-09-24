@@ -53,7 +53,6 @@ export class QuizAttemptsService {
       throw new NotFoundException('Quiz tidak ditemukan');
     }
 
-    
     // 2. Cek atau Buat Enrollment Otomatis jika Belum Terdaftar
     let enrollment = await this.prisma.enrollment.findUnique({
       where: {
@@ -102,8 +101,11 @@ export class QuizAttemptsService {
       };
     });
 
+    // Menggunakan Math.round() agar skor dibulatkan (contoh: 66.666... menjadi 67)
     const finalScore =
-      totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
+      totalQuestions > 0
+        ? Math.round((correctCount / totalQuestions) * 100)
+        : 0;
     const isPassed = finalScore >= 75;
 
     // 4. Simpan Attempt, Answers, dan Result secara Atomik (Transaction)
