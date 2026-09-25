@@ -79,10 +79,12 @@ export class QuizAttemptsService {
     let correctCount = 0;
     const totalQuestions = quiz.questions.length;
 
-    // Cek apakah kuis ini mengandung soal ESSAY
-    const hasEssay = quiz.questions.some(
-      (q) => q.type === 'ESSAY' || !q.options || q.options.length === 0,
-    );
+    // ✅ FIX DETEKSI ESSAY: Fleksibel terhadap 'ESSAY', 'essay', atau soal tanpa opsi pilihan ganda
+    const hasEssay = quiz.questions.some((q) => {
+      const qType = String(q.type || '').toUpperCase();
+      const hasNoOptions = !q.options || q.options.length === 0;
+      return qType === 'ESSAY' || hasNoOptions;
+    });
 
     const answerDataToCreate = quiz.questions.map((question) => {
       const studentAns = answers.find((a) => a.questionId === question.id);
@@ -108,12 +110,14 @@ export class QuizAttemptsService {
 
     // Logika Skor & Status Penilaian
     let finalScore: number | null = null;
-    let status: QuizAttemptStatus = QuizAttemptStatus.GRADED;
+    let status: QuizAttemptStatus;
+    let remarks: string;
 
     if (hasEssay) {
-      // Jika ADA ESSAY: Status diset SUBMITTED (menunggu evaluasi guru), skor diset null
+      // Jika ADA ESSAY: Paksa SUBMITTED, skor NULL, status belum selesai dinilai
       finalScore = null;
       status = QuizAttemptStatus.SUBMITTED;
+      remarks = 'Menunggu Evaluasi Guru';
     } else {
       // Jika MURNI PILIHAN GANDA: Dibulatkan (contoh: 66.666... jadi 67)
       finalScore =
@@ -121,6 +125,7 @@ export class QuizAttemptsService {
           ? Math.round((correctCount / totalQuestions) * 100)
           : 0;
       status = QuizAttemptStatus.GRADED;
+      remarks = finalScore >= 75 ? 'Lulus' : 'Remedial';
     }
 
     const isPassed = finalScore !== null ? finalScore >= 75 : false;
@@ -133,7 +138,7 @@ export class QuizAttemptsService {
           quizId: quiz.id,
           studentId,
           score: finalScore,
-          status,
+          status: status,
           submittedAt: new Date(),
           answers: {
             create: answerDataToCreate,
@@ -149,11 +154,7 @@ export class QuizAttemptsService {
           quizId: quiz.id,
           score: finalScore,
           passed: isPassed,
-          remarks: hasEssay
-            ? 'Menunggu Evaluasi Guru'
-            : isPassed
-            ? 'Lulus'
-            : 'Remedial',
+          remarks: remarks,
         },
       });
 
