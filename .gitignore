@@ -49,6 +49,7 @@ dist/
 *.tsbuildinfo
 tsconfig.build.tsbuildinfo
 .env
+coverage/
 
 
 
