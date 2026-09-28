@@ -270,6 +270,19 @@ http://localhost:3001/api/docs
 - Swagger: `https://crack-be-kevin12er-production.up.railway.app/api/docs`
 - Base API: `https://crack-be-kevin12er-production.up.railway.app`
 
+## Backend Unit Test Coverage
+
+Test runner: Jest
+
+Coverage:
+- Statements: 17.28%
+- Branches: 14.65%
+- Functions: 18.33%
+- Lines: 16.41%
+
+Command:
+npm run test:cov
+
 ## Deploy Ke Railway
 
 1. Push code ke GitHub.
