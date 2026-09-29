@@ -15,6 +15,7 @@ import { QuizOptionsModule } from './quiz-options/quiz-options.module';
 import { QuizAnswersModule } from './quiz-answers/quiz-answers.module';
 import { ResultsModule } from './results/results.module';
 import { TasksModule } from './tasks/tasks.module';
+import { UsersModule } from './users/users.module';
 
 
 @Module({
@@ -38,6 +39,7 @@ import { TasksModule } from './tasks/tasks.module';
     QuizAnswersModule,
     ResultsModule,
     TasksModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [
