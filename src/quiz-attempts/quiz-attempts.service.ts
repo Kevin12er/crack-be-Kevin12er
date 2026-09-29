@@ -147,16 +147,6 @@ export class QuizAttemptsService {
 
     const isPassed = finalScore !== null ? finalScore >= 75 : false;
 
-    // Tambahkan log ini tepat sebelum periksa conditions/transaction:
-console.log('--- DEBUG QUIZ ATTEMPT SUBMIT ---');
-console.log('Quiz ID:', quizId);
-console.log('Questions from DB:', JSON.stringify(quiz.questions, null, 2));
-console.log('Answers Payload from FE:', JSON.stringify(answers, null, 2));
-console.log('hasEssayInDatabase:', hasEssayInDatabase);
-console.log('hasEssayInAnswers:', hasEssayInAnswers);
-console.log('Calculated hasEssay:', hasEssay);
-console.log('---------------------------------');
-
     // 6. Simpan Attempt, Answers, dan Result secara Atomik (Transaction)
     return this.prisma.$transaction(async (tx) => {
       const attempt = await tx.quizAttempt.create({
