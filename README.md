@@ -9,6 +9,7 @@ Backend ini adalah REST API untuk Learning Management System (LMS), dibangun den
 - **Role-Based Access Control (RBAC):** Proteksi hak akses berdasarkan peran (`STUDENT` dan `INSTRUCTOR`).
 - **Role Injection Protection:** Validasi ketat DTO (`ValidationPipe` + `forbidNonWhitelisted`) untuk mencegah *privilege escalation* saat registrasi.
 - **Rate Limiting (Anti Brute-Force):** Proteksi global menggunakan `@nestjs/throttler` (dibatasi 5 request/menit untuk mencegah serangan brute-force pada endpoint sensitif).
+- **UpdateProfile:** Update profile/ mengganti username dan email
 
 ### 2. Manajemen Kelas & Konten (Course & Content Management)
 - **Courses (Full CRUD):**
@@ -64,8 +65,10 @@ src
 │   ├── jwt-auth.guard.ts
 │   └── jwt.strategy.ts
 ├── courses
+│   ├── courses.controller.spec.ts
 │   ├── courses.controller.ts
 │   ├── courses.module.ts
+│   ├── courses.service.spec.ts
 │   ├── courses.service.ts
 │   ├── dto
 │   │   ├── create-course.dto.ts
@@ -103,6 +106,7 @@ src
 │   │   └── create-quiz-attempt.dto.ts
 │   ├── quiz-attempts.controller.ts
 │   ├── quiz-attempts.module.ts
+│   ├── quiz-attempts.service.spec.ts
 │   └── quiz-attempts.service.ts
 ├── quiz-options
 │   ├── dto
@@ -127,18 +131,25 @@ src
 │   ├── results.controller.ts
 │   ├── results.module.ts
 │   └── results.service.ts
-└── tasks
+├── tasks
+│   ├── dto
+│   │   ├── create-task.dto.ts
+│   │   └── update-task.dto.ts
+│   ├── entities
+│   │   └── task.entity.ts
+│   ├── tasks.controller.spec.ts
+│   ├── tasks.controller.ts
+│   ├── tasks.module.ts
+│   ├── tasks.service.spec.ts
+│   └── tasks.service.ts
+└── users
     ├── dto
-    │   ├── create-task.dto.ts
-    │   └── update-task.dto.ts
-    ├── entities
-    │   └── task.entity.ts
-    ├── tasks.controller.spec.ts
-    ├── tasks.controller.ts
-    ├── tasks.module.ts
-    ├── tasks.service.spec.ts
-    └── tasks.service.ts
-
+    │   └── update-user.dto.ts
+    ├── users.controller.spec.ts
+    ├── users.controller.ts
+    ├── users.module.ts
+    ├── users.service.spec.ts
+    └── users.service.ts
 ```
 
 ## Penjelasan Struktur Folder `src`
@@ -272,8 +283,8 @@ http://localhost:3001/api/docs
 
 ## Backend Unit Test Coverage
 
+(Masih dalam tahap tes untuk keseluruhan modul)
 Test runner: Jest
-
 Coverage:
 - Statements: 17.28%
 - Branches: 14.65%
