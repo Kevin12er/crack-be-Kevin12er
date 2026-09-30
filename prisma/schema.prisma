@@ -23,15 +23,18 @@ enum QuestionType {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  email        String        @unique
-  name         String?
-  password     String
-  role         Role          @default(STUDENT)
-  courses      Course[]
-  enrollment   Enrollment[]
-  quizAttempts QuizAttempt[]
-  results      Result[]
+  id               String        @id @default(uuid())
+  email            String        @unique
+  name             String?
+  password         String
+  role             Role          @default(STUDENT)
+  emailVerified    Boolean       @default(false)
+  emailVerifyToken String?       @unique
+  emailVerifyExpiresAt  DateTime?
+  courses          Course[]
+  enrollment       Enrollment[]
+  quizAttempts     QuizAttempt[]
+  results          Result[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

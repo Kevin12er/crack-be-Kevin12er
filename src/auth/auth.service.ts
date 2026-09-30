@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
+import { EmailService } from '../email/email.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
@@ -14,6 +15,7 @@ import * as bcrypt from 'bcrypt';
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -44,6 +46,7 @@ export class AuthService {
       user: result,
     };
   }
+
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({

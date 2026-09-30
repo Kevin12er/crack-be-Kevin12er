@@ -16,6 +16,7 @@ import { QuizAnswersModule } from './quiz-answers/quiz-answers.module';
 import { ResultsModule } from './results/results.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UsersModule } from './users/users.module';
+import { EmailModule } from './email/email.module';
 
 
 @Module({
@@ -40,6 +41,7 @@ import { UsersModule } from './users/users.module';
     ResultsModule,
     TasksModule,
     UsersModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [
