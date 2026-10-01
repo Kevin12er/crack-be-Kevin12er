@@ -123,6 +123,10 @@ export class AuthService {
       throw new UnauthorizedException('Email atau password salah');
     }
 
+    if (!user.password) {
+      throw new UnauthorizedException('Email atau password salah');
+    }
+
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Email atau password salah');
@@ -147,6 +151,69 @@ export class AuthService {
       message: 'Login berhasil',
       access_token: accessToken,
       user: userResult, // <-- Mengembalikan data user beserta role asli dari DB
+    };
+  }
+
+  async loginWithGoogle(googleUser: {
+    googleId: string;
+    email: string;
+    name?: string;
+  }) {
+    let user = await this.prisma.user.findUnique({
+      where: {
+        googleId: googleUser.googleId,
+      },
+    });
+
+    if (!user) {
+      const userByEmail = await this.prisma.user.findUnique({
+        where: {
+          email: googleUser.email,
+        },
+      });
+
+      if (userByEmail) {
+        user = await this.prisma.user.update({
+          where: {
+            id: userByEmail.id,
+          },
+          data: {
+            googleId: googleUser.googleId,
+          },
+        });
+      } else {
+        user = await this.prisma.user.create({
+          data: {
+            googleId: googleUser.googleId,
+            email: googleUser.email,
+            name: googleUser.name,
+            password: null,
+            emailVerified: true,
+            role: Role.STUDENT,
+          },
+        });
+      }
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload);
+
+    const {
+      password: _password,
+      emailVerifyToken: _token,
+      emailVerifyExpiresAt: _expiresAt,
+      ...userResult
+    } = user;
+
+    return {
+      message: 'Login Google berhasil',
+      access_token: accessToken,
+      user: userResult,
     };
   }
 }
