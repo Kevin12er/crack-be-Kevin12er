@@ -8,6 +8,7 @@ import {
   Get,
   UseGuards,
   Request,
+  Response,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -58,8 +59,22 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  googleCallback(@Request() req: ExpressRequest & { user: any }) {
-    return this.authService.loginWithGoogle(req.user);
+  async googleCallback(
+    @Request() req: ExpressRequest & { user: any },
+    @Response() res: any,
+  ) {
+    const result = await this.authService.loginWithGoogle(req.user);
+
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return res.redirect(
+      `${process.env.GOOGLE_FRONTEND_URL || 'http://localhost:3000'}/login`,
+    );
   }
 
   @ApiOperation({ summary: 'Verifikasi email pengguna' })
