@@ -65,26 +65,33 @@ export class AuthController {
   ) {
     const result = await this.authService.loginWithGoogle(req.user);
 
+    const isProduction = process.env.NODE_ENV === 'production';
+    const frontendUrl =
+      process.env.GOOGLE_FRONTEND_URL || 'http://localhost:3000';
+
     res.cookie('access_token', result.access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction,
+      // Cross-site fetch butuh SameSite=None + Secure di production.
+      sameSite: isProduction ? 'none' : 'lax',
+      path: '/',
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    return res.redirect(
-      `${process.env.GOOGLE_FRONTEND_URL || 'http://localhost:3000'}/login`,
-    );
+    return res.redirect(`${frontendUrl}/login`);
   }
 
   @ApiOperation({ summary: 'Logout pengguna' })
   @ApiResponse({ status: 200, description: 'Logout berhasil.' })
   @Post('logout')
   logout(@Response() res: any) {
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.clearCookie('access_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      path: '/',
     });
 
     return res.json({ message: 'Logout berhasil' });

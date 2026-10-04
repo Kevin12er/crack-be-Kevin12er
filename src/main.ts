@@ -8,11 +8,39 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // await app.listen(process.env.PORT ?? 3001);
 
+  // Railway/ingress berada di reverse proxy; penting untuk skenario production.
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   app.use(cookieParser());
-  
-  //enable cors untuk front end
+
+  const allowedOrigins = [
+    process.env.GOOGLE_FRONTEND_URL,
+    process.env.FRONTEND_URL,
+    process.env.FRONTEND_URL_WWW,
+    'http://localhost:3000',
+    'https://learnbridge.fun',
+    'https://www.learnbridge.fun',
+  ].filter((origin): origin is string => Boolean(origin));
+
+  // enable CORS untuk FE, termasuk cookie lintas origin
   app.enableCors({
-    origin: process.env.GOOGLE_FRONTEND_URL || 'http://localhost:3000',
+    origin: (
+      origin: string | undefined,
+      callback: (error: Error | null, allow?: boolean) => void,
+    ) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(
+        new Error(`Origin ${origin} tidak diizinkan oleh CORS`),
+        false,
+      );
+    },
     credentials: true,
   });
 
