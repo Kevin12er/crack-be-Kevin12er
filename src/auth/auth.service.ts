@@ -42,7 +42,7 @@ export class AuthService {
         email: dto.email,
         password: hashedPassword,
         name: dto.name,
-        role: Role.STUDENT, // Hardcode selalu Role.STUDENT
+        role: Role.STUDENT,
         emailVerifyToken: hashedVerificationToken,
         emailVerifyExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
       },
@@ -58,6 +58,7 @@ export class AuthService {
       emailVerifyExpiresAt: _expiresAt,
       ...result
     } = user;
+
     return {
       message: 'Registrasi berhasil',
       user: result,
@@ -128,6 +129,7 @@ export class AuthService {
     }
 
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+
     if (!isPasswordValid) {
       throw new UnauthorizedException('Email atau password salah');
     }
@@ -136,10 +138,14 @@ export class AuthService {
       throw new UnauthorizedException('Email belum diverifikasi');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
     const accessToken = await this.jwtService.signAsync(payload);
 
-    // Pisahkan password dari data user
     const {
       password: _password,
       emailVerifyToken: _token,
@@ -150,7 +156,7 @@ export class AuthService {
     return {
       message: 'Login berhasil',
       access_token: accessToken,
-      user: userResult, // <-- Mengembalikan data user beserta role asli dari DB
+      user: userResult,
     };
   }
 
@@ -173,6 +179,12 @@ export class AuthService {
       });
 
       if (userByEmail) {
+        if (userByEmail.role !== Role.STUDENT) {
+          throw new UnauthorizedException(
+            'Login dengan Google hanya tersedia untuk akun siswa',
+          );
+        }
+
         user = await this.prisma.user.update({
           where: {
             id: userByEmail.id,

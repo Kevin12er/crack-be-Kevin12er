@@ -77,6 +77,19 @@ export class AuthController {
     );
   }
 
+  @ApiOperation({ summary: 'Logout pengguna' })
+  @ApiResponse({ status: 200, description: 'Logout berhasil.' })
+  @Post('logout')
+  logout(@Response() res: any) {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
+    return res.json({ message: 'Logout berhasil' });
+  }
+
   @ApiOperation({ summary: 'Verifikasi email pengguna' })
   @ApiResponse({
     status: 200,

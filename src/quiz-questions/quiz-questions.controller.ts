@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+  Delete,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -20,6 +28,7 @@ import { QuizQuestionsService } from './quiz-questions.service';
 export class QuizQuestionsController {
   constructor(private readonly quizQuestionsService: QuizQuestionsService) {}
 
+  // Create
   @ApiOperation({ summary: 'Membuat soal quiz (Khusus Instructor)' })
   @ApiResponse({ status: 201, description: 'Soal quiz berhasil dibuat.' })
   @ApiResponse({
@@ -34,6 +43,18 @@ export class QuizQuestionsController {
     return this.quizQuestionsService.create(createQuizQuestionDto);
   }
 
+  // Findall quiz
+  @ApiOperation({ summary: 'Mengambil semua soal quiz' })
+  @ApiResponse({
+    status: 200,
+    description: 'Semua soal quiz berhasil diambil.',
+  })
+  @Get()
+  findAll() {
+    return this.quizQuestionsService.findAll();
+  }
+
+  // FindQuiz by id
   @ApiOperation({ summary: 'Mengambil daftar soal berdasarkan quizId' })
   @ApiParam({ name: 'quizId', description: 'ID quiz' })
   @ApiResponse({ status: 200, description: 'Daftar soal berhasil diambil.' })
@@ -42,6 +63,7 @@ export class QuizQuestionsController {
     return this.quizQuestionsService.findByQuizId(quizId);
   }
 
+  // Remove Quiz
   @ApiOperation({ summary: 'Hapus soal berdasarkan ID (Khusus Instructor)' })
   @ApiResponse({ status: 200, description: 'Soal berhasil dihapus.' })
   @ApiResponse({ status: 404, description: 'Soal tidak ditemukan.' })

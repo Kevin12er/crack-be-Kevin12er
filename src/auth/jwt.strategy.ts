@@ -23,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    console.log('--JWT PAYLOAD BERHASIL DIBACA--', payload);
+    // console.log('--JWT PAYLOAD BERHASIL DIBACA--', payload);
 
     return {
       userId: payload.sub,

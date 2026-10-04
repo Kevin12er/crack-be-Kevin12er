@@ -6,6 +6,7 @@ import { CreateQuizQuestionDto } from './dto/create-quiz-question.dto';
 export class QuizQuestionsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Create
   async create(createQuizQuestionDto: CreateQuizQuestionDto) {
     const quiz = await this.prisma.quiz.findUnique({
       where: { id: createQuizQuestionDto.quizId },
@@ -35,6 +36,24 @@ export class QuizQuestionsService {
     });
   }
 
+  // findall 
+  async findAll() {
+    const prismaClient = this.prisma as unknown as Record<string, any>;
+
+    return prismaClient['quizQuestion'].findMany({
+      include: {
+        quiz: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+      orderBy: [{ createdAt: 'asc' }],
+    });
+  }
+
+  // findQuiz
   async findByQuizId(quizId: string) {
     const prismaClient = this.prisma as unknown as Record<string, any>;
 
@@ -52,7 +71,7 @@ export class QuizQuestionsService {
     });
   }
 
-  //Delete 
+  //Delete
   async remove(id: string) {
     // 1. Cek apakah soal ada di database
     const question = await this.prisma.quizQuestion.findUnique({
@@ -76,4 +95,3 @@ export class QuizQuestionsService {
     return { message: 'Soal beserta opsinya berhasil dihapus' };
   }
 }
-

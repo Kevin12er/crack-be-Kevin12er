@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmailService } from './email.service';
 
+process.env.RESEND_API_KEY = 're_test';
+
 describe('EmailService', () => {
   let service: EmailService;
 
