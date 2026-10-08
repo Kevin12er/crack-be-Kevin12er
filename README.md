@@ -5,30 +5,34 @@ Backend ini adalah REST API untuk Learning Management System (LMS), dibangun den
 ## Fitur Yang Sudah Ada
 
 ### 1. Autentikasi & Keamanan (Auth & Security)
+
 - **JWT Authentication:** Endpoint `register`, `login`, dan `profile` (GET me).
 - **Role-Based Access Control (RBAC):** Proteksi hak akses berdasarkan peran (`STUDENT` dan `INSTRUCTOR`).
-- **Role Injection Protection:** Validasi ketat DTO (`ValidationPipe` + `forbidNonWhitelisted`) untuk mencegah *privilege escalation* saat registrasi.
+- **Role Injection Protection:** Validasi ketat DTO (`ValidationPipe` + `forbidNonWhitelisted`) untuk mencegah _privilege escalation_ saat registrasi.
 - **Rate Limiting (Anti Brute-Force):** Proteksi global menggunakan `@nestjs/throttler` (dibatasi 5 request/menit untuk mencegah serangan brute-force pada endpoint sensitif).
 - **UpdateProfile:** Update profile/ mengganti username dan email
 
 ### 2. Manajemen Kelas & Konten (Course & Content Management)
+
 - **Courses (Full CRUD):**
   - Membuat, membaca, memperbarui, dan menghapus kelas (khusus Instructor pemilik kelas).
   - Advanced Search & Filtering: Pencarian berdasarkan kata kunci (`search`), kategori (`category`), dan rentang harga (`minPrice` & `maxPrice`).
 - **Materials (Full CRUD):**
   - Pengelolaan materi pembelajaran per kelas (Create, Read, Update, Delete khusus Instructor).
   - Filter pencarian materi berdasarkan `courseId` dan kata kunci `search`.
-- **Enrollment:** Siswa (`STUDENT`) dapat mendaftar (*enroll*) ke dalam kelas yang tersedia.
+- **Enrollment:** Siswa (`STUDENT`) dapat mendaftar (_enroll_) ke dalam kelas yang tersedia.
 
 ### 3. Sistem Kuis & Penilaian (Quizzes & Assessment System)
+
 - **Quizzes (Full CRUD):**
-  - Pengelolaan kuis pembelajaran dengan pembatasan durasi (*time limit*).
+  - Pengelolaan kuis pembelajaran dengan pembatasan durasi (_time limit_).
   - Filter pencarian kuis berdasarkan `courseId` dan kata kunci `search`.
 - **Quiz Questions & Options:** Bank soal (Pilihan Ganda & Essay) beserta opsi jawaban dan batasan kuncinya.
-- **Quiz Attempts & Answers:** Tracking percobaan pengerjaan kuis siswa secara *real-time* beserta perekaman jawaban.
-- **Results:** Rekapitulasi nilai otomatis (*score*, status kelulusan, dan *remarks*).
+- **Quiz Attempts & Answers:** Tracking percobaan pengerjaan kuis siswa secara _real-time_ beserta perekaman jawaban.
+- **Results:** Rekapitulasi nilai otomatis (_score_, status kelulusan, dan _remarks_).
 
 ### 4. Dokumentasi & Alat Bantu
+
 - **Interactive Swagger Docs:** Dokumentasi OpenAPI interaktif di `/api/docs` untuk pengujian seluruh endpoint.
 - **Prisma ORM & PostgreSQL Integration:** Manajemen skema database relational yang solid dan terintegrasi.
 
@@ -156,14 +160,14 @@ src
 
 - `auth/` — Otentikasi JWT, registrasi/login, hashing password, dekorator `@Roles`, serta guard keamanan (`JwtAuthGuard`, `RolesGuard`).
 - `courses/` — Manajemen kelas/course (CRUD lengkap, proteksi kepemilikan Instructor, serta query pencarian & filter harga/kategori).
-- `enrollment/` — Pendaftaran siswa ke kelas (*Student enrollment*).
+- `enrollment/` — Pendaftaran siswa ke kelas (_Student enrollment_).
 - `materials/` — Pengelolaan materi pembelajaran per kelas (Full CRUD + Search).
 - `quizzes/` — Pengelolaan data kuis utama per kelas (Full CRUD + Search).
 - `quiz-questions/` — Bank soal per kuis (tipe pilihan ganda & essay).
 - `quiz-options/` — Opsi pilihan jawaban beserta penentuan kunci jawaban benar.
-- `quiz-attempts/` — Manajemen sesi pengerjaan kuis siswa (tracking status pengerjaan & *time limit*).
+- `quiz-attempts/` — Manajemen sesi pengerjaan kuis siswa (tracking status pengerjaan & _time limit_).
 - `quiz-answers/` — Perekaman jawaban yang dikirimkan oleh siswa.
-- `results/` — Rekapitulasi nilai akhir, status kelulusan, dan catatan (*remarks*).
+- `results/` — Rekapitulasi nilai akhir, status kelulusan, dan catatan (_remarks_).
 - `tasks/` — Manajemen tugas personal siswa (Full CRUD).
 - `prisma/` — Modul database ORM (`PrismaService` & `PrismaModule`).
 
@@ -183,7 +187,6 @@ Model yang sudah ada di `prisma/schema.prisma`:
 - `Task`
 - `Result`
 
-
 Enum yang sudah digunakan:
 
 - `Role` (`INSTRUCTOR`, `STUDENT`)
@@ -193,20 +196,23 @@ Enum yang sudah digunakan:
 ## Endpoint Tambahan Yang Sudah Diimplementasi
 
 ### 1. Materials Module (`/materials`)
+
 - `GET /materials` — Mengambil daftar materi (Dukungan filter `courseId` & `search`)
 - `GET /materials/:id` — Mengambil detail materi berdasarkan ID
-- `POST /materials` — Membuat materi pembelajaran baru (*Khusus Instructor*)
-- `PATCH /materials/:id` — Memperbarui materi pembelajaran (*Khusus Instructor*)
-- `DELETE /materials/:id` — Menghapus materi pembelajaran (*Khusus Instructor*)
+- `POST /materials` — Membuat materi pembelajaran baru (_Khusus Instructor_)
+- `PATCH /materials/:id` — Memperbarui materi pembelajaran (_Khusus Instructor_)
+- `DELETE /materials/:id` — Menghapus materi pembelajaran (_Khusus Instructor_)
 
 ### 2. Quizzes Module (`/quizzes`)
+
 - `GET /quizzes` — Mengambil daftar kuis (Dukungan filter `courseId` & `search`)
 - `GET /quizzes/:id` — Mengambil detail kuis berdasarkan ID
-- `POST /quizzes` — Membuat kuis baru (*Khusus Instructor*)
-- `PATCH /quizzes/:id` — Memperbarui kuis (*Khusus Instructor*)
-- `DELETE /quizzes/:id` — Menghapus kuis (*Khusus Instructor*)
+- `POST /quizzes` — Membuat kuis baru (_Khusus Instructor_)
+- `PATCH /quizzes/:id` — Memperbarui kuis (_Khusus Instructor_)
+- `DELETE /quizzes/:id` — Menghapus kuis (_Khusus Instructor_)
 
 ### 3. Quiz Management & Assessment Modules
+
 - **Questions & Options:**
   - `POST /quiz-questions` — Membuat soal kuis (Pilihan Ganda / Essay)
   - `GET /quiz-questions/quiz/:quizId` — Mengambil daftar soal berdasarkan ID Kuis
@@ -218,7 +224,7 @@ Enum yang sudah digunakan:
   - `POST /quiz-answers` — Menyimpan jawaban siswa per soal
   - `GET /quiz-answers/attempt/:attemptId` — Mengambil rekap jawaban siswa dalam 1 sesi kuis
 - **Results:**
-  - `GET /results` — Mengambil seluruh rekapitulasi nilai kuis
+  - `GET /results?page=1&limit=20&search=Ahmad&mapel=Matematika` — Mengambil rekapitulasi nilai kuis dengan pagination dan filter server-side
   - `GET /results/:studentId` — Mengambil hasil nilai kuis spesifik berdasarkan ID Siswa
 
 ## Environment Variables
@@ -286,6 +292,7 @@ http://localhost:3001/api/docs
 (Masih dalam tahap tes untuk keseluruhan modul)
 Test runner: Jest
 Coverage:
+
 - Statements: 17.28%
 - Branches: 14.65%
 - Functions: 18.33%
@@ -308,7 +315,9 @@ npm run test:cov
 ```bash
 npx prisma generate && npx prisma migrate deploy && npm run build && npm run start:prod
 ```
+
 ## ERD (Table relations)
+
 ![LearnBridge ERD Diagram](./docs/Images/ERD_relasi_database.png)
 
 ## Author

@@ -21,11 +21,11 @@ import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
-    // Rate Limiting Configuration: Maksimal 5 request per 60 detik (60000 ms)
+    // Rate Limiting Configuration: Maksimal 60 request per 60 detik (60000 ms)
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 5,
+        limit: 60,
       },
     ]),
     PrismaModule,
