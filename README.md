@@ -224,7 +224,10 @@ Enum yang sudah digunakan:
   - `POST /quiz-answers` — Menyimpan jawaban siswa per soal
   - `GET /quiz-answers/attempt/:attemptId` — Mengambil rekap jawaban siswa dalam 1 sesi kuis
 - **Results:**
-  - `GET /results?page=1&limit=20&search=Ahmad&mapel=Matematika` — Mengambil rekapitulasi nilai kuis dengan pagination dan filter server-side
+  - `GET /results?limit=10&sort=recent` — Mengambil rekapitulasi nilai kuis terbaru untuk dashboard guru
+  - `GET /results?page=1&limit=20&sort=recent` — Mengambil rekapitulasi nilai kuis dengan pagination untuk halaman detail
+  - `GET /results?limit=10&search=Ahmad` — Mengambil rekapitulasi nilai kuis dengan filter nama siswa di server
+  - `GET /results/stats` — Mengambil ringkasan statistik dashboard result
   - `GET /results/:studentId` — Mengambil hasil nilai kuis spesifik berdasarkan ID Siswa
 
 ## Environment Variables

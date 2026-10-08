@@ -47,11 +47,10 @@ describe('ResultsService', () => {
   });
 
   describe('findAllForUser', () => {
-    it('should return paginated results with joins and filters', async () => {
+    it('should return results data with joins, filters, and recent sorting', async () => {
       // Arrange
       const studentId = 'student-123';
 
-      const countRows = [{ total: 1 }];
       const rows = [
         {
           id: 'result-1',
@@ -68,15 +67,19 @@ describe('ResultsService', () => {
         },
       ];
 
-      prismaMock.$queryRaw
-        .mockResolvedValueOnce(countRows)
-        .mockResolvedValueOnce(rows);
+      prismaMock.$queryRaw.mockResolvedValueOnce(rows);
 
       // Act
       const result = await resultsService.findAllForUser(
         studentId,
         Role.STUDENT,
-        { page: 1, limit: 20, search: 'Ahmad', mapel: 'Matematika' },
+        {
+          page: 1,
+          limit: 10,
+          sort: 'recent',
+          search: 'Ahmad',
+          mapel: 'Matematika',
+        },
       );
 
       // Assert
@@ -102,12 +105,32 @@ describe('ResultsService', () => {
             },
           },
         ],
-        total: 1,
-        page: 1,
-        totalPages: 1,
       });
 
-      expect(prismaMock.$queryRaw).toHaveBeenCalledTimes(2);
+      expect(prismaMock.$queryRaw).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return dashboard stats for current user scope', async () => {
+      prismaMock.$queryRaw.mockResolvedValueOnce([
+        {
+          total: 247,
+          passed: 189,
+          pending: 58,
+          lastUpdated: new Date('2024-10-08T15:30:00Z'),
+        },
+      ]);
+
+      const result = await resultsService.getStatsForUser(
+        'instructor-123',
+        Role.INSTRUCTOR,
+      );
+
+      expect(result).toEqual({
+        total: 247,
+        passed: 189,
+        pending: 58,
+        lastUpdated: '2024-10-08T15:30:00.000Z',
+      });
     });
   });
 

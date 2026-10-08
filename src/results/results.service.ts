@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 type ResultsListQuery = {
   page?: number | string;
   limit?: number | string;
+  sort?: string;
   search?: string;
   mapel?: string;
 };
@@ -45,9 +46,13 @@ type ResultListItem = {
 
 type PaginatedResultList = {
   data: ResultListItem[];
+};
+
+type ResultStats = {
   total: number;
-  page: number;
-  totalPages: number;
+  passed: number;
+  pending: number;
+  lastUpdated: string;
 };
 
 @Injectable()
@@ -59,7 +64,7 @@ export class ResultsService {
     role: Role,
     query: ResultsListQuery = {},
   ): Promise<PaginatedResultList> {
-    const { page, limit, offset, search, mapel } =
+    const { limit, offset, search, mapel, orderDirection } =
       this.normalizePagination(query);
     const whereClause = this.buildResultsWhereClause(
       userId,
@@ -68,19 +73,7 @@ export class ResultsService {
       mapel,
     );
 
-    const [totalRow, dataRows] = await Promise.all([
-      this.prisma.$queryRaw<
-        Array<{ total: bigint | number | string }>
-      >(Prisma.sql`
-        SELECT COUNT(DISTINCT result."id") AS total
-        FROM "Result" result
-        LEFT JOIN "User" student ON student."id" = result."studentId"
-        LEFT JOIN "Quiz" quiz ON quiz."id" = result."quizId"
-        LEFT JOIN "Course" course ON course."id" = quiz."courseId"
-        LEFT JOIN "QuizAttempt" attempt ON attempt."id" = result."attemptId"
-        ${whereClause}
-      `),
-      this.prisma.$queryRaw<ResultRow[]>(Prisma.sql`
+    const dataRows = await this.prisma.$queryRaw<ResultRow[]>(Prisma.sql`
         SELECT
           result."id" AS "id",
           result."attemptId" AS "attemptId",
@@ -99,19 +92,52 @@ export class ResultsService {
         LEFT JOIN "Course" course ON course."id" = quiz."courseId"
         LEFT JOIN "QuizAttempt" attempt ON attempt."id" = result."attemptId"
         ${whereClause}
-        ORDER BY result."createdAt" DESC
+        ORDER BY result."createdAt" ${Prisma.raw(orderDirection)}
         LIMIT ${limit}
         OFFSET ${offset}
-      `),
-    ]);
-
-    const total = Number(totalRow[0]?.total ?? 0);
+      `);
 
     return {
       data: dataRows.map((row) => this.mapResultRow(row)),
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async getStatsForUser(userId: string, role: Role): Promise<ResultStats> {
+    const whereClause = this.buildScopeWhereClause(userId, role);
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        total: bigint | number | string;
+        passed: bigint | number | string;
+        pending: bigint | number | string;
+        lastUpdated: Date | string | null;
+      }>
+    >(Prisma.sql`
+      SELECT
+        COUNT(DISTINCT result."studentId") AS total,
+        COUNT(DISTINCT CASE
+          WHEN result."score" >= 75 AND attempt."status" = 'GRADED'
+          THEN result."studentId"
+        END) AS passed,
+        COUNT(DISTINCT CASE
+          WHEN attempt."status" = 'SUBMITTED' OR result."score" IS NULL
+          THEN result."studentId"
+        END) AS pending,
+        MAX(result."updatedAt") AS "lastUpdated"
+      FROM "Result" result
+      LEFT JOIN "User" student ON student."id" = result."studentId"
+      LEFT JOIN "Quiz" quiz ON quiz."id" = result."quizId"
+      LEFT JOIN "Course" course ON course."id" = quiz."courseId"
+      LEFT JOIN "QuizAttempt" attempt ON attempt."id" = result."attemptId"
+      ${whereClause}
+    `);
+
+    const row = rows[0];
+    return {
+      total: Number(row?.total ?? 0),
+      passed: Number(row?.passed ?? 0),
+      pending: Number(row?.pending ?? 0),
+      lastUpdated: new Date(row?.lastUpdated ?? Date.now()).toISOString(),
     };
   }
 
@@ -175,7 +201,8 @@ export class ResultsService {
 
   private normalizePagination(query: ResultsListQuery) {
     const parsedPage = Number(query.page ?? 1);
-    const parsedLimit = Number(query.limit ?? 20);
+    const parsedLimit = Number(query.limit ?? 10);
+    const sort = (query.sort ?? 'recent').toLowerCase();
 
     const page =
       Number.isFinite(parsedPage) && parsedPage > 0
@@ -184,15 +211,24 @@ export class ResultsService {
     const limit =
       Number.isFinite(parsedLimit) && parsedLimit > 0
         ? Math.floor(parsedLimit)
-        : 20;
+        : 10;
 
     return {
       page,
       limit,
       offset: (page - 1) * limit,
+      orderDirection: sort === 'recent' ? ('DESC' as const) : ('DESC' as const),
       search: query.search?.trim() || undefined,
       mapel: query.mapel?.trim() || undefined,
     };
+  }
+
+  private buildScopeWhereClause(userId: string, role: Role) {
+    if (role === Role.STUDENT) {
+      return Prisma.sql`WHERE result."studentId" = ${userId}`;
+    }
+
+    return Prisma.sql`WHERE course."instructorId" = ${userId}`;
   }
 
   private buildResultsWhereClause(
@@ -203,11 +239,11 @@ export class ResultsService {
   ) {
     const clauses: Prisma.Sql[] = [];
 
-    if (role === Role.STUDENT) {
-      clauses.push(Prisma.sql`result."studentId" = ${userId}`);
-    } else {
-      clauses.push(Prisma.sql`course."instructorId" = ${userId}`);
-    }
+    clauses.push(
+      role === Role.STUDENT
+        ? Prisma.sql`result."studentId" = ${userId}`
+        : Prisma.sql`course."instructorId" = ${userId}`,
+    );
 
     if (search) {
       clauses.push(Prisma.sql`student."name" ILIKE ${`%${search}%`}`);

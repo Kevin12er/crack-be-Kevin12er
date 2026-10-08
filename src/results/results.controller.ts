@@ -24,7 +24,8 @@ export class ResultsController {
 
   @ApiOperation({ summary: 'Melihat daftar hasil quiz dengan pagination' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @ApiQuery({ name: 'sort', required: false, type: String, example: 'recent' })
   @ApiQuery({ name: 'search', required: false, type: String, example: 'Ahmad' })
   @ApiQuery({
     name: 'mapel',
@@ -40,6 +41,16 @@ export class ResultsController {
       req.user.role,
       query,
     );
+  }
+
+  @ApiOperation({ summary: 'Melihat ringkasan statistik dashboard result' })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistik result berhasil diambil.',
+  })
+  @Get('stats')
+  getStats(@Req() req: any) {
+    return this.resultsService.getStatsForUser(req.user.userId, req.user.role);
   }
 
   @ApiOperation({ summary: 'Melihat hasil quiz berdasarkan studentId' })

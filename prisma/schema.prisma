@@ -120,6 +120,7 @@ model QuizAttempt {
 
   @@index([quizId])
   @@index([studentId])
+  @@index([status])
 }
 
 model Result {

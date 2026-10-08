@@ -17,6 +17,11 @@ export class ResultsListQueryDto {
   @Min(1)
   limit?: number;
 
+  @ApiPropertyOptional({ example: 'recent', default: 'recent' })
+  @IsOptional()
+  @IsString()
+  sort?: string;
+
   @ApiPropertyOptional({ example: 'Ahmad' })
   @IsOptional()
   @IsString()
